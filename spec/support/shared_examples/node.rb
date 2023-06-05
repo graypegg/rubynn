@@ -30,6 +30,13 @@ RSpec.shared_examples "Node" do
     expect(node.value).to eq nil
   end
 
+  it 'should return the value as a string when to_s is called' do
+    node = described_class.new weight: 0.5, bias: 0.2
+    node.activate instance_double("Node", value: 0.4)
+
+    expect(node.to_s).to eq node.value.to_s
+  end
+
   describe '#activate' do
     let(:weight) { 0.5 }
     let(:bias) { 1.0 }

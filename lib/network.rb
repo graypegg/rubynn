@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'network_layer'
+
 class Network
   attr_accessor :layers
 
@@ -16,9 +18,15 @@ class Network
     layers.find { |layer| layer.io_mode == mode }
   end
 
+  def calculated?
+    output_layer = get_io_layer :output
+    output_layer.calculated?
+  end
+
   def calculate!
     input_layer = get_io_layer :input
 
+    # TODO: Move the layer.nodes.each call into NetworkLayer. Replace tests for this with a mock check
     layers[1..].reduce(input_layer) do |last_layer, layer|
       layer.nodes.each do |node|
         node.activate(*last_layer.nodes)
@@ -27,13 +35,18 @@ class Network
     end
   end
 
-  def -(other)
-    self_output = get_io_layer :output
-    other_output = other.get_io_layer :output
+  def -(learning_network)
+    raise IncompatibleNetworksError, "#{self} has not been calculated and thus cannot be used as the training network" unless calculated?
+    raise IncompatibleNetworksError, "#{learning_network} has not been calculated and thus cannot be used as the learning network" unless learning_network.calculated?
 
-    self_output.nodes.each do |self_node|
+    learning_layer = learning_network.get_io_layer :output
+    training_layer = get_io_layer :output
 
+    if (learning_layer.length != training_layer.length)
+      raise IncompatibleNetworksError, "#{learning_layer} (dimension #{learning_layer.length}) can not be compared with #{training_layer} (dimension #{training_layer.length})"
     end
+
+    training_layer - learning_layer
   end
 
   class << self
@@ -46,17 +59,9 @@ class Network
     end
   end
 
-  class NetworkLayer
-    attr_accessor :nodes, :io_mode
-
-    def initialize(nodes:, io_mode: nil)
-      @nodes = nodes
-      @io_mode = io_mode
-    end
-  end
-
   class DuplicatedIOLayerError < StandardError; end
   class MissingIOLayerError < StandardError; end
+  class IncompatibleNetworksError < StandardError; end
 
   private
 

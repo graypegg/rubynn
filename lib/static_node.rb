@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class InputNode < Node
+class StaticNode < Node
   attr_writer :value
 
   class << self

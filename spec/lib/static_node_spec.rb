@@ -2,9 +2,9 @@
 
 require 'rspec'
 require_relative '../../lib/node'
-require_relative '../../lib/input_node'
+require_relative '../../lib/static_node'
 
-RSpec.describe InputNode do
+RSpec.describe StaticNode do
   it_behaves_like "Node"
 
   it 'should provide a #value= method' do
