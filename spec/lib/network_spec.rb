@@ -237,6 +237,26 @@ RSpec.describe Network do
       }.to raise_error Network::IncompatibleNetworksError
     end
 
+    it 'should throw error if trying to calculate the difference between mismatched input layers' do
+      network_1 = described_class.define do
+        input StaticNode.new(value: 1.0), StaticNode.new(value: 0.0)
+        output StaticNode.new(weight: 0.5), StaticNode.new(weight: 0.5)
+      end
+
+      network_2 = described_class.define do
+        input StaticNode.new(value: 1.0)
+        output StaticNode.new(weight: 1.0), StaticNode.new(weight: 1.0)
+      end
+
+      network_1.calculate!
+      network_2.calculate!
+
+      expect_any_instance_of(NetworkLayer).not_to receive(:-)
+      expect {
+        network_1 - network_2
+      }.to raise_error Network::IncompatibleNetworksError
+    end
+
     it 'should calculate the error between a calculated network and a training network' do
       network_1 = described_class.define do
         input StaticNode.new(value: 1.0), StaticNode.new(value: 0.0)

@@ -35,6 +35,8 @@ class Network
     end
   end
 
+  # TODO: This only does ONE layer, and it's just the output layer. I added a test to fail this on input layer sizes as well which is
+  # not implemented. This should be where back propogation happens.
   def -(learning_network)
     raise IncompatibleNetworksError, "#{self} has not been calculated and thus cannot be used as the training network" unless calculated?
     raise IncompatibleNetworksError, "#{learning_network} has not been calculated and thus cannot be used as the learning network" unless learning_network.calculated?
