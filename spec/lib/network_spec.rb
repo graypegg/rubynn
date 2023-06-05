@@ -9,7 +9,7 @@ RSpec.describe Network do
   describe "Network#define" do
     it 'should accept at least 2 layers of Nodes and expose an array of Layers' do
       network = described_class.define do
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         output Node.new, Node.new
       end
 
@@ -20,7 +20,7 @@ RSpec.describe Network do
 
     it 'should create input layers' do
       network = described_class.define do
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         output Node.new, Node.new
       end
 
@@ -31,7 +31,7 @@ RSpec.describe Network do
     it 'should always create input layers in layer 0' do
       network = described_class.define do
         layer Node.new
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         output Node.new, Node.new
       end
 
@@ -43,7 +43,7 @@ RSpec.describe Network do
 
     it 'should create output layers' do
       network = described_class.define do
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         output Node.new, Node.new
       end
 
@@ -53,7 +53,7 @@ RSpec.describe Network do
 
     it 'should create normal layers' do
       network = described_class.define do
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         layer Node.new
         output Node.new, Node.new
       end
@@ -64,7 +64,7 @@ RSpec.describe Network do
 
     it 'should accept more than 2 layers of Nodes' do
       network = described_class.define do
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         layer Node.new, Node.new
         layer Node.new, Node.new
         output Node.new, Node.new
@@ -76,8 +76,8 @@ RSpec.describe Network do
     it 'should only allow one input layer' do
       expect {
         described_class.define do
-          input StaticNode.new, StaticNode.new
-          input StaticNode.new, StaticNode.new
+          input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
+          input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         end
       }.to raise_error Network::DuplicatedIOLayerError
     end
@@ -85,7 +85,7 @@ RSpec.describe Network do
     it 'should only allow one output layer' do
       expect {
         described_class.define do
-          input StaticNode.new, StaticNode.new
+          input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
           output StaticNode.new, StaticNode.new
           output StaticNode.new, StaticNode.new
         end
@@ -94,7 +94,7 @@ RSpec.describe Network do
 
     it 'should ignore layers after output layer' do
       network = described_class.define do
-        input StaticNode.new, StaticNode.new
+        input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
         layer StaticNode.new, StaticNode.new
         output StaticNode.new, StaticNode.new
         layer StaticNode.new, StaticNode.new
@@ -103,10 +103,50 @@ RSpec.describe Network do
       expect(network.layers.length).to eq 3
     end
 
+    it 'should throw if a non-static value input layer is provided' do
+      expect {
+        described_class.define do
+          is_training
+          input Node.new
+          output Node.new
+        end
+      }.to raise_error Network::NonStaticInputLayerError
+    end
+
+    it 'should not throw if a fully static value input layer is provided' do
+      expect {
+        described_class.define do
+          is_training
+          input StaticNode.new(value: 0.0)
+          output StaticNode.new(value: 0.0)
+        end
+      }.not_to raise_error Network::NonStaticInputLayerError
+    end
+
+    it 'should throw if a non-static value output layer is provided for training networks' do
+      expect {
+        described_class.define do
+          is_training
+          input StaticNode.new(value: 0.0)
+          output Node.new
+        end
+      }.to raise_error Network::BadTrainingNetworkError
+    end
+
+    it 'should not throw if a fully static value output layer is provided for training networks' do
+      expect {
+        described_class.define do
+          is_training
+          input StaticNode.new(value: 0.0)
+          output StaticNode.new(value: 0.0)
+        end
+      }.not_to raise_error Network::BadTrainingNetworkError
+    end
+
     it 'should require an input layer' do
       expect {
         described_class.define do
-          layer StaticNode.new, StaticNode.new
+          layer StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
           output StaticNode.new, StaticNode.new
         end
       }.to raise_error Network::MissingIOLayerError
@@ -115,13 +155,12 @@ RSpec.describe Network do
     it 'should require an output layer' do
       expect {
         described_class.define do
-          input StaticNode.new, StaticNode.new
+          input StaticNode.new(value: 0.0), StaticNode.new(value: 0.0)
           layer StaticNode.new, StaticNode.new
         end
       }.to raise_error Network::MissingIOLayerError
     end
   end
-
 
   describe '#calculate!' do
     it 'should calculate the final values for the output layer' do

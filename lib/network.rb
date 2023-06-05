@@ -61,6 +61,8 @@ class Network
 
   class DuplicatedIOLayerError < StandardError; end
   class MissingIOLayerError < StandardError; end
+  class BadTrainingNetworkError < StandardError; end
+  class NonStaticInputLayerError < StandardError; end
   class IncompatibleNetworksError < StandardError; end
 
   private
@@ -82,8 +84,14 @@ class Network
     layer.io_mode = mode
     case mode
     when :input
+      if !layer.calculated?
+        raise NonStaticInputLayerError, "The input layer for #{self} is not fully static, and thus there are no values to calculate"
+      end
       layers.unshift(layer)
     when :output
+      if !layer.calculated? && @type == :training
+        raise BadTrainingNetworkError, "The output layer for #{self} is not fully static, and thus cannot be used for training"
+      end
       layers.push(layer)
     end
     layer
