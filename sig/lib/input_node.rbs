@@ -1,0 +1,7 @@
+class InputNode < Node
+  attr_writer value: Float | nil
+
+  def self.activation_function: (Float x) -> Float
+
+  def initialize: (?value: Float | nil, ?weight: Float, ?bias: Float) -> void
+end
