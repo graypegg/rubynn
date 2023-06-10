@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Node
-  attr_reader :weight, :bias, :value
+  attr_reader :bias, :value
 
   class << self
     def activation_function(x)
@@ -12,17 +12,16 @@ class Node
   class PropertyOutsideRangeError < StandardError; end
   VALID_RANGE = -1.0..1.0
 
-  def initialize(weight: rand(VALID_RANGE), bias: rand(VALID_RANGE))
-    raise PropertyOutsideRangeError, "weight=#{weight} is not in range of -1.0..1.0" unless weight.between?(-1.0, 1.0)
+  def initialize(bias: rand(VALID_RANGE))
     raise PropertyOutsideRangeError, "bias=#{bias} is not in range of -1.0..1.0" unless bias.between?(-1.0, 1.0)
 
-    @weight = weight
+    @weights = {}
     @bias = bias
     @value = nil
   end
 
   def activate(*inputs)
-    weighted_sum = inputs.reduce(0.0) { |out, inp| out + (inp.value * weight) }
+    weighted_sum = inputs.reduce(0.0) { |out, inp| out + (inp.value * inp.get_weight_for(self)) }
     output = self.class.activation_function(weighted_sum + bias)
     @value = output
     output
@@ -30,5 +29,10 @@ class Node
 
   def to_s
     value.to_s
+  end
+
+  def get_weight_for(node)
+    @weights[node] = rand(VALID_RANGE) if @weights[node].nil?
+    @weights[node]
   end
 end

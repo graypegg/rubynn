@@ -11,7 +11,7 @@ class StaticNode < Node
   end
 
   def initialize(value: nil, weight: 1.0, bias: 0.0)
-    super(weight:, bias:)
+    super(bias:)
     @value = value
   end
 end
